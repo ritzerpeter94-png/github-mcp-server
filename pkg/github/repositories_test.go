@@ -1405,7 +1405,11 @@ func Test_ListCommits(t *testing.T) {
 	// Verify tool definition once
 	serverTool := ListCommits(translations.NullTranslationHelper)
 	tool := serverTool.Tool
-	require.NoError(t, toolsnaps.Test(tool.Name, tool))
+	// ListCommits is the FeatureFlagFieldsParam-enabled variant; it owns the
+	// _ff_<flag> snapshot. The canonical list_commits.snap is owned by
+	// LegacyListCommits (see Test_LegacyListCommits_Definition).
+	require.NoError(t, toolsnaps.Test(tool.Name+"_ff_"+FeatureFlagFieldsParam, tool))
+	require.Equal(t, FeatureFlagFieldsParam, serverTool.FeatureFlagEnable)
 
 	schema, ok := tool.InputSchema.(*jsonschema.Schema)
 	require.True(t, ok, "InputSchema should be *jsonschema.Schema")
@@ -1421,6 +1425,7 @@ func Test_ListCommits(t *testing.T) {
 	assert.Contains(t, schema.Properties, "until")
 	assert.Contains(t, schema.Properties, "page")
 	assert.Contains(t, schema.Properties, "perPage")
+	assert.Contains(t, schema.Properties, "fields")
 	assert.ElementsMatch(t, schema.Required, []string{"owner", "repo"})
 
 	// Setup mock commits for success case
@@ -3642,7 +3647,11 @@ func Test_GetTag(t *testing.T) {
 func Test_ListReleases(t *testing.T) {
 	serverTool := ListReleases(translations.NullTranslationHelper)
 	tool := serverTool.Tool
-	require.NoError(t, toolsnaps.Test(tool.Name, tool))
+	// ListReleases is the FeatureFlagFieldsParam-enabled variant; it owns the
+	// _ff_<flag> snapshot. The canonical list_releases.snap is owned by
+	// LegacyListReleases (see Test_LegacyListReleases_Definition).
+	require.NoError(t, toolsnaps.Test(tool.Name+"_ff_"+FeatureFlagFieldsParam, tool))
+	require.Equal(t, FeatureFlagFieldsParam, serverTool.FeatureFlagEnable)
 
 	schema, ok := tool.InputSchema.(*jsonschema.Schema)
 	require.True(t, ok, "InputSchema should be *jsonschema.Schema")
@@ -3651,6 +3660,7 @@ func Test_ListReleases(t *testing.T) {
 	assert.NotEmpty(t, tool.Description)
 	assert.Contains(t, schema.Properties, "owner")
 	assert.Contains(t, schema.Properties, "repo")
+	assert.Contains(t, schema.Properties, "fields")
 	assert.ElementsMatch(t, schema.Required, []string{"owner", "repo"})
 
 	mockReleases := []*github.RepositoryRelease{

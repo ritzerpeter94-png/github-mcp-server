@@ -564,7 +564,11 @@ func Test_SearchIssues(t *testing.T) {
 	// Verify tool definition once
 	serverTool := SearchIssues(translations.NullTranslationHelper)
 	tool := serverTool.Tool
-	require.NoError(t, toolsnaps.Test(tool.Name, tool))
+	// SearchIssues is the FeatureFlagFieldsParam-enabled variant; it owns the
+	// _ff_<flag> snapshot. The canonical search_issues.snap is owned by
+	// LegacySearchIssues (see Test_LegacySearchIssues_Definition).
+	require.NoError(t, toolsnaps.Test(tool.Name+"_ff_"+FeatureFlagFieldsParam, tool))
+	require.Equal(t, FeatureFlagFieldsParam, serverTool.FeatureFlagEnable)
 
 	assert.Equal(t, "search_issues", tool.Name)
 	assert.NotEmpty(t, tool.Description)
@@ -575,6 +579,7 @@ func Test_SearchIssues(t *testing.T) {
 	assert.Contains(t, tool.InputSchema.(*jsonschema.Schema).Properties, "order")
 	assert.Contains(t, tool.InputSchema.(*jsonschema.Schema).Properties, "perPage")
 	assert.Contains(t, tool.InputSchema.(*jsonschema.Schema).Properties, "page")
+	assert.Contains(t, tool.InputSchema.(*jsonschema.Schema).Properties, "fields")
 	assert.ElementsMatch(t, tool.InputSchema.(*jsonschema.Schema).Required, []string{"query"})
 
 	// Setup mock search results
@@ -1644,8 +1649,11 @@ func Test_ListIssues(t *testing.T) {
 	// Verify tool definition
 	serverTool := ListIssues(translations.NullTranslationHelper)
 	tool := serverTool.Tool
-	require.NoError(t, toolsnaps.Test(tool.Name, tool))
-	require.Empty(t, serverTool.FeatureFlagEnable)
+	// ListIssues is the FeatureFlagFieldsParam-enabled variant; it owns the
+	// _ff_<flag> snapshot. The canonical list_issues.snap is owned by
+	// LegacyListIssues (see Test_LegacyListIssues_Definition).
+	require.NoError(t, toolsnaps.Test(tool.Name+"_ff_"+FeatureFlagFieldsParam, tool))
+	require.Equal(t, FeatureFlagFieldsParam, serverTool.FeatureFlagEnable)
 
 	assert.Equal(t, "list_issues", tool.Name)
 	assert.NotEmpty(t, tool.Description)
@@ -1658,6 +1666,7 @@ func Test_ListIssues(t *testing.T) {
 	assert.Contains(t, tool.InputSchema.(*jsonschema.Schema).Properties, "since")
 	assert.Contains(t, tool.InputSchema.(*jsonschema.Schema).Properties, "after")
 	assert.Contains(t, tool.InputSchema.(*jsonschema.Schema).Properties, "perPage")
+	assert.Contains(t, tool.InputSchema.(*jsonschema.Schema).Properties, "fields")
 	assert.ElementsMatch(t, tool.InputSchema.(*jsonschema.Schema).Required, []string{"owner", "repo"})
 
 	// Mock issues data
