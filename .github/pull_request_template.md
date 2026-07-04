@@ -1,3 +1,6 @@
+"github.copilot.advanced": {
+     "authProvider": "github-enterprise"
+},
 <!--
 Copilot: Fill all sections. Prefer short, concrete answers.
 If a checkbox is selected, add a brief explanation.
